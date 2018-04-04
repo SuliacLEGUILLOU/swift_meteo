@@ -80,7 +80,10 @@ class RecastController: UIViewController {
                 client.getForecast(latitude: lat!, longitude: long!) { result in
                     switch result {
                     case .success(let currentForecast, let requestMetadata):
-                        self.anserLabel.text = currentForecast.currently?.summary
+                        print(currentForecast.currently?.summary)
+                        DispatchQueue.main.async {
+                            self.anserLabel.text = currentForecast.currently?.summary
+                        }
                         break
                     case .failure(let error):
                         self.anserLabel.text = "Error."
