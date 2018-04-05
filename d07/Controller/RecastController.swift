@@ -10,6 +10,21 @@ import UIKit
 import RecastAI
 import ForecastIO
 
+extension UIButton {
+    func setBackgroundColor(color: UIColor, forState: UIControlState) {
+        UIGraphicsBeginImageContext(CGSize(width: 1, height: 1))
+        UIGraphicsGetCurrentContext()!.setFillColor(color.cgColor)
+        UIGraphicsGetCurrentContext()!.fill(CGRect(x: 0, y: 0, width: 1, height: 1))
+        let colorImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        self.setBackgroundImage(colorImage, for: forState)
+        self.layer.cornerRadius = 5
+    }
+}
+
+
+
 class RecastController: UIViewController {
     
     var bot: RecastAIClient?
@@ -19,6 +34,7 @@ class RecastController: UIViewController {
         let b = UIButton()
         b.setTitle("Send", for: .normal)
         b.backgroundColor = UIColor(displayP3Red: 10/255, green: 146/255, blue: 242/255, alpha: 1)
+        b.setBackgroundColor(color: UIColor(red:0.05, green:0.38, blue:0.62, alpha:1.0), forState: UIControlState.highlighted)
         
         b.translatesAutoresizingMaskIntoConstraints = false
         b.addTarget(self, action: #selector(makeRequest), for: .touchUpInside)
@@ -71,22 +87,23 @@ class RecastController: UIViewController {
             for s in location {
                 print(s.key, s.value)
                 if s.key == "lat" {
-                    lat = Double(s.value as! NSNumber)
+                    lat = Double(truncating: s.value as! NSNumber)
                 } else if s.key == "lng" {
-                    long = Double(s.value as! NSNumber)
+                    long = Double(truncating: s.value as! NSNumber)
                 }
             }
             if lat != nil && long != nil {
                 client.getForecast(latitude: lat!, longitude: long!) { result in
                     switch result {
-                    case .success(let currentForecast, let requestMetadata):
-                        print(currentForecast.currently?.summary)
+                    case .success(let currentForecast, _):
                         DispatchQueue.main.async {
+                            print(currentForecast.currently?.summary ?? "Error geting forecast")
                             self.anserLabel.text = currentForecast.currently?.summary
                         }
                         break
                     case .failure(let error):
                         self.anserLabel.text = "Error."
+                        print(error)
                     }
                     
                 }
